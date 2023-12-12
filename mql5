@@ -1,0 +1,60 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                         Stochastic Cross Alert MT4|
+//|                                      Developer's Site: forexroboteasy.com|
+//|                                     Development: Forex Robot Easy Team|
+//|                                         Version: 1.0                |
+//+------------------------------------------------------------------+
+
+#property copyright 'forexroboteasy.com'
+#property link      'forexroboteasy.com'
+
+input int period = 14; // Stochastic period
+input int oversoldLevel = 20; // Oversold level
+input int overboughtLevel = 80; // Overbought level
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int init()
+{
+    IndicatorBuffers(2);
+    SetIndexBuffer(0, MainBuffer);
+    SetIndexBuffer(1, SignalBuffer);
+    SetIndexStyle(0, DRAW_LINE);
+    SetIndexStyle(1, DRAW_LINE);
+    SetIndexLabel(0, 'Main');
+    SetIndexLabel(1, 'Signal');
+    IndicatorShortName('Stochastic Cross Alert MT4');
+    return 0;
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int start()
+{
+    int limit = Bars - period;
+
+    for (int i = 0; i < limit; i++)
+    {
+        double mainValue = iStochastic(NULL, 0, period, 3, 3, MODE_SMA, 0, i);
+        double signalValue = iStochastic(NULL, 0, period, 3, 3, MODE_SMA, 1, i);
+
+        MainBuffer[i] = mainValue;
+        SignalBuffer[i] = signalValue;
+    }
+
+    if (CrossedAbove(MainBuffer, SignalBuffer, 1) && MainBuffer[1] < oversoldLevel)
+    {
+        Alert('Buy signal generated at ', TimeToStr(TimeLocal()));
+        Print('Buy signal generated at ', TimeToStr(TimeLocal()));
+    }
+    else if (CrossedBelow(MainBuffer, SignalBuffer, 1) && MainBuffer[1] > overboughtLevel)
+    {
+        Alert('Sell signal generated at ', TimeToStr(TimeLocal()));
+        Print('Sell signal generated at ', TimeToStr(TimeLocal()));
+    }
+
+    return 0;
+}
